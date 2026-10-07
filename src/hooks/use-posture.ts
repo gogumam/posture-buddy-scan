@@ -7,7 +7,10 @@ export function usePostureData<T>(read: () => T, fallback: T): T {
 
   useEffect(() => {
     setValue(read());
-    return subscribe(() => setValue(read()));
+    const unsubscribe = subscribe(() => setValue(read()));
+    return () => {
+      unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
