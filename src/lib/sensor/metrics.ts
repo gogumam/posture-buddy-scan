@@ -165,7 +165,7 @@ const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.le
 function pct(xs: number[], p: number) {
   if (!xs.length) return 0;
   const s = [...xs].sort((a, b) => a - b);
-  return s[Math.min(s.length - 1, Math.max(0, Math.round((p / 100) * (s.length - 1))))];
+  return s[Math.min(s.length - 1, Math.max(0, Math.round((p / 100) * (s.length - 1))))] ?? 0;
 }
 const r1 = (v: number) => Math.round(v * 10) / 10;
 
@@ -199,11 +199,12 @@ export function symmetryIndex(metrics: Record<PelvisMetricKey, number>): number 
 
 export function downsampleTrace(frames: PelvisFrame[], n = 150) {
   if (!frames.length) return [];
-  const t0 = frames[0].t;
+  const t0 = frames[0]?.t ?? 0;
   const step = Math.max(1, Math.floor(frames.length / n));
   const out: PelvisSession["trace"] = [];
   for (let i = 0; i < frames.length; i += step) {
     const f = frames[i];
+    if (!f) continue;
     out.push({ t: r1(f.t - t0), roll: r1(f.roll), pitch: r1(f.pitch), yaw: r1(f.yaw) });
   }
   return out;
