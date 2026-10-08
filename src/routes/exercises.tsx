@@ -3,6 +3,7 @@ import { CircleCheck, Circle, Info } from "lucide-react";
 
 import { PageHeader } from "@/components/posture/AppShell";
 import { Disclaimer } from "@/components/posture/Disclaimer";
+import { PrePostCompare } from "@/components/pants/PrePostCompare";
 import {
   Accordion,
   AccordionContent,
@@ -54,6 +55,7 @@ function ExercisesPage() {
         title="오늘의 운동"
         subtitle="분석 결과를 참고한 추천 루틴입니다. 치료나 교정을 보장하지 않습니다."
       />
+      <div className="px-5 pb-4"><PrePostCompare /></div>
 
       <div className="space-y-5 px-5">
         <section className="surface-card p-5">

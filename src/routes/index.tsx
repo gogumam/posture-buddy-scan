@@ -1,212 +1,126 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ChevronRight, Scan, Sparkles } from "lucide-react";
+import { Bluetooth, Camera, ChevronRight, Cpu, Play } from "lucide-react";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { PageHeader } from "@/components/posture/AppShell";
-import { AsymmetryBar } from "@/components/posture/AsymmetryBar";
 import { BalanceGauge } from "@/components/posture/BalanceGauge";
-import { BodySilhouette } from "@/components/posture/BodySilhouette";
 import { Disclaimer } from "@/components/posture/Disclaimer";
 import { LevelBadge } from "@/components/posture/LevelBadge";
+import { PantsFigure, SensorDemoNotice } from "@/components/pants/PantsViz";
 import { Button } from "@/components/ui/button";
-import { usePostureData } from "@/hooks/use-posture";
-import { completionRate, getMeasurements } from "@/lib/posture-store";
+import { connectedCount, useSensorHub, useSessions } from "@/hooks/use-sensor-hub";
+import { ALL_SENSORS } from "@/lib/sensor/devices";
 import {
-  balanceScore,
-  metricValue,
-  overallLevel,
-  type PostureMeasurement,
-} from "@/lib/posture-types";
+  PELVIS_METRICS,
+  TAG_LABEL,
+  TEST_META,
+  formatMetric,
+  levelOfPelvis,
+} from "@/lib/sensor/metrics";
+import type { PelvisMetricKey } from "@/lib/sensor/types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "바른자세 스크리닝 · 오늘의 자세 요약" },
-      {
-        name: "description",
-        content:
-          "스마트폰으로 자세 비대칭을 가볍게 살펴보고, 골반·어깨·몸통 지표의 변화 추이와 맞춤 운동 가이드를 확인하세요. 의료 진단이 아닌 스크리닝 체험 프로토타입입니다.",
-      },
-      { property: "og:title", content: "바른자세 스크리닝 · 오늘의 자세 요약" },
-      {
-        property: "og:description",
-        content: "골반·어깨·몸통 비대칭 지표를 한눈에 보고 맞춤 운동을 추천받는 자세 스크리닝 앱.",
-      },
+      { title: "스마트 팬츠 골반 비대칭 측정 · 대시보드" },
+      { name: "description", content: "IMU 센서가 내장된 스마트 팬츠로 골반 좌우·전후 기울기, 회전, 동작 중 좌우 비대칭을 측정하고 추적합니다." },
+      { property: "og:title", content: "스마트 팬츠 골반 비대칭 측정" },
+      { property: "og:description", content: "입기만 하면 골반 움직임을 측정하는 스마트 팬츠 MVP 데모." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: Dashboard,
+  component: HomePage,
 });
 
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
-}
+const KEYS: PelvisMetricKey[] = ["obliquity", "tilt", "rotationAsym", "motionDiff"];
 
-function Dashboard() {
-  const measurements = usePostureData<PostureMeasurement[]>(getMeasurements, []);
-  const rate = usePostureData<number>(() => completionRate(), 0);
-  const latest = measurements[0] ?? null;
-
-  const trend = [...measurements]
-    .reverse()
-    .slice(-8)
-    .map((m) => ({
-      date: formatDate(m.timestamp),
-      balance: balanceScore(m),
-      pelvis: Math.abs(metricValue(m, "pelvisHeightDiff")),
-      trunk: Math.abs(metricValue(m, "trunkTilt")),
-    }));
+function HomePage() {
+  const snap = useSensorHub();
+  const sessions = useSessions();
+  const n = connectedCount(snap);
+  const latest = sessions?.[0] ?? null;
+  const status = Object.fromEntries(ALL_SENSORS.map((id) => [id, snap.devices[id].status]));
+  const trend = [...(sessions ?? [])].reverse().map((s) => ({
+    d: new Date(s.timestamp).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" }),
+    v: s.symmetryIndex,
+  }));
 
   return (
-    <div className="space-y-5">
-      <div className="gradient-hero px-5 pb-20 pt-8 text-primary-foreground">
-        <p className="text-sm opacity-90">안녕하세요 👋</p>
-        <h1 className="mt-1 text-2xl font-bold leading-snug">
-          오늘의 자세를
-          <br />
-          가볍게 살펴볼까요?
-        </h1>
-        <p className="mt-3 max-w-[18rem] text-sm leading-relaxed opacity-85">
-          카메라나 사진 한 장으로 좌우 균형을 확인하고, 맞춤 운동을 추천받아 보세요.
-        </p>
-      </div>
+    <div>
+      <PageHeader title="스마트 팬츠" subtitle="골반 움직임 비대칭 측정 시스템 · MVP" />
+      <div className="space-y-5 px-5 pb-6">
+        <section className="surface-card flex items-center gap-4 p-4">
+          <PantsFigure status={status} className="w-28 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm text-muted-foreground">팬츠 센서</p>
+            <p className="text-lg font-bold">{n === 3 ? "착용·연결 완료" : `${n}/3 센서 연결됨`}</p>
+            <Button asChild size="lg" variant={n === 3 ? "outline" : "default"} className="mt-2 h-12 w-full">
+              <Link to="/connect"><Bluetooth className="size-5" />{n === 3 ? "연결 상태 보기" : "센서 연결"}</Link>
+            </Button>
+          </div>
+        </section>
 
-      <div className="-mt-16 space-y-5 px-5">
-        {latest ? (
-          <section className="surface-card p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs text-muted-foreground">
-                  최근 측정 · {formatDate(latest.timestamp)}
-                </p>
-                <h2 className="mt-1 text-lg font-semibold">자세 분석 요약</h2>
-              </div>
-              <LevelBadge level={overallLevel(latest)} size="lg" />
-            </div>
-
-            <div className="mt-3 grid grid-cols-[1fr_auto] items-center gap-3">
-              <BalanceGauge score={balanceScore(latest)} />
-              <div className="h-[150px] w-[96px] shrink-0">
-                <BodySilhouette
-                  shoulderDiff={metricValue(latest, "shoulderHeightDiff")}
-                  pelvisDiff={metricValue(latest, "pelvisHeightDiff")}
-                  trunkTilt={metricValue(latest, "trunkTilt")}
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-4 border-t border-border pt-4">
-              <AsymmetryBar
-                metricKey="shoulderHeightDiff"
-                value={metricValue(latest, "shoulderHeightDiff")}
-                compact
-              />
-              <AsymmetryBar
-                metricKey="pelvisHeightDiff"
-                value={metricValue(latest, "pelvisHeightDiff")}
-                compact
-              />
-              <AsymmetryBar
-                metricKey="trunkTilt"
-                value={metricValue(latest, "trunkTilt")}
-                compact
-              />
-            </div>
-
-            <Link
-              to="/result/$id"
-              params={{ id: latest.id }}
-              className="mt-4 flex items-center justify-between rounded-lg bg-muted px-4 py-3 text-sm font-medium transition-colors hover:bg-secondary"
-            >
-              전체 분석 결과 보기
-              <ChevronRight className="size-4" aria-hidden />
-            </Link>
-          </section>
-        ) : (
-          <section className="surface-card p-6 text-center">
-            <h2 className="text-lg font-semibold">아직 측정 기록이 없어요</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              첫 측정을 시작하면 좌우 균형 지표가 여기에 표시됩니다.
-            </p>
-          </section>
-        )}
-
-        <Button asChild size="lg" className="h-16 w-full rounded-xl text-base font-semibold">
-          <Link to="/measure">
-            <Scan className="size-5" aria-hidden />
-            자세 측정 시작
-            <ArrowRight className="size-5" aria-hidden />
-          </Link>
+        <Button asChild size="lg" className="h-16 w-full text-lg">
+          <Link to="/pelvis"><Play className="size-6" /> 골반 측정 시작</Link>
         </Button>
 
-        <section className="surface-card p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold">변화 추이</h2>
-            <Link to="/history" className="text-xs font-medium text-primary">
-              기록 전체 보기
+        {latest ? (
+          <section className="surface-card p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">최근 측정</h2>
+              <span className="text-xs text-muted-foreground">{TEST_META[latest.test].label} · {TAG_LABEL[latest.tag]}</span>
+            </div>
+            <div className="mt-3 flex items-center gap-4">
+              <BalanceGauge score={latest.symmetryIndex} label="대칭 지수" className="w-28 shrink-0" />
+              <ul className="flex-1 space-y-2 text-sm">
+                {KEYS.map((k) => (
+                  <li key={k} className="flex items-center justify-between gap-2">
+                    <span className="text-muted-foreground">{PELVIS_METRICS[k].axis}</span>
+                    <span className="font-semibold tabular-nums">{formatMetric(k, latest.metrics[k])}</span>
+                    <LevelBadge level={levelOfPelvis(k, latest.metrics[k])} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <Link to="/session/$id" params={{ id: latest.id }} className="mt-3 inline-flex items-center text-sm font-medium text-primary">
+              결과 자세히 보기 <ChevronRight className="size-4" />
             </Link>
-          </div>
-          {trend.length > 1 ? (
-            <div className="mt-3 h-40">
+          </section>
+        ) : null}
+
+        {trend.length > 1 ? (
+          <section className="surface-card p-5">
+            <h2 className="font-semibold">대칭 지수 추이</h2>
+            <div className="mt-2 h-36">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trend} margin={{ top: 6, right: 6, left: -22, bottom: 0 }}>
-                  <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" domain={[0, 100]} />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 12,
-                      border: "1px solid var(--border)",
-                      background: "var(--card)",
-                      fontSize: 12,
-                    }}
-                    formatter={(v: number) => [`${v}점`, "균형 지수"]}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="balance"
-                    stroke="var(--chart-1)"
-                    strokeWidth={3}
-                    dot={{ r: 3 }}
-                  />
+                <LineChart data={trend} margin={{ left: -24, right: 8 }}>
+                  <XAxis dataKey="d" fontSize={11} />
+                  <YAxis domain={[40, 100]} fontSize={11} />
+                  <Tooltip />
+                  <Line dataKey="v" name="대칭 지수" stroke="var(--primary)" strokeWidth={2.5} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
-          ) : (
-            <p className="mt-3 text-sm text-muted-foreground">
-              측정이 2회 이상 쌓이면 변화 추이가 그려집니다.
-            </p>
-          )}
-        </section>
+            <Link to="/history" className="inline-flex items-center text-sm font-medium text-primary">전체 기록 <ChevronRight className="size-4" /></Link>
+          </section>
+        ) : null}
 
-        <section className="surface-card flex items-center justify-between gap-4 p-5">
-          <div>
-            <p className="text-sm font-semibold">이번 주 운동 수행률</p>
-            <p className="mt-1 text-xs text-muted-foreground">추천 운동 완료 체크 기준</p>
-          </div>
-          <div className="text-right">
-            <p className="text-2xl font-bold tabular-nums text-primary">{rate}%</p>
-            <Link to="/exercises" className="text-xs font-medium text-primary">
-              운동 가이드 →
-            </Link>
-          </div>
-        </section>
-
-        <section className="surface-card p-5">
-          <div className="flex items-center gap-2">
-            <Sparkles className="size-4 text-primary" aria-hidden />
-            <h2 className="text-base font-semibold">웨어러블 연동 준비 중</h2>
-          </div>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            향후 BLE IMU 센서나 스마트워치 데이터를 받아 더 촘촘한 측정이 가능해집니다. 지금은 가상
-            데이터로 구조만 미리 볼 수 있어요.
-          </p>
-          <Link to="/sensors" className="mt-3 inline-flex text-sm font-medium text-primary">
-            센서 연동 화면 보기 →
+        <div className="grid grid-cols-2 gap-3">
+          <Link to="/sensors" className="surface-card flex flex-col gap-2 p-4">
+            <Cpu className="size-6 text-primary" />
+            <span className="font-semibold">웨어러블 설계</span>
+            <span className="text-xs text-muted-foreground">센서 위치 · 데이터 흐름</span>
           </Link>
-        </section>
+          <Link to="/measure" className="surface-card flex flex-col gap-2 p-4">
+            <Camera className="size-6 text-primary" />
+            <span className="font-semibold">보조 측정</span>
+            <span className="text-xs text-muted-foreground">카메라 사진 체험</span>
+          </Link>
+        </div>
 
+        <SensorDemoNotice />
         <Disclaimer variant="medical" />
-        <Disclaimer variant="demo" />
       </div>
     </div>
   );
