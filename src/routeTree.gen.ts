@@ -10,15 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as ExercisesRouteImport } from './routes/exercises'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as MeasureRouteImport } from './routes/measure'
+import { Route as PelvisRouteImport } from './routes/pelvis'
 import { Route as SensorsRouteImport } from './routes/sensors'
 import { Route as ResultIdRouteImport } from './routes/result.$id'
+import { Route as SessionIdRouteImport } from './routes/session.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectRoute = ConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExercisesRoute = ExercisesRouteImport.update({
@@ -36,6 +44,11 @@ const MeasureRoute = MeasureRouteImport.update({
   path: '/measure',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PelvisRoute = PelvisRouteImport.update({
+  id: '/pelvis',
+  path: '/pelvis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SensorsRoute = SensorsRouteImport.update({
   id: '/sensors',
   path: '/sensors',
@@ -46,55 +59,92 @@ const ResultIdRoute = ResultIdRouteImport.update({
   path: '/result/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SessionIdRoute = SessionIdRouteImport.update({
+  id: '/session/$id',
+  path: '/session/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/connect': typeof ConnectRoute
   '/exercises': typeof ExercisesRoute
   '/history': typeof HistoryRoute
   '/measure': typeof MeasureRoute
+  '/pelvis': typeof PelvisRoute
   '/sensors': typeof SensorsRoute
   '/result/$id': typeof ResultIdRoute
+  '/session/$id': typeof SessionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/connect': typeof ConnectRoute
   '/exercises': typeof ExercisesRoute
   '/history': typeof HistoryRoute
   '/measure': typeof MeasureRoute
+  '/pelvis': typeof PelvisRoute
   '/sensors': typeof SensorsRoute
   '/result/$id': typeof ResultIdRoute
+  '/session/$id': typeof SessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/connect': typeof ConnectRoute
   '/exercises': typeof ExercisesRoute
   '/history': typeof HistoryRoute
   '/measure': typeof MeasureRoute
+  '/pelvis': typeof PelvisRoute
   '/sensors': typeof SensorsRoute
   '/result/$id': typeof ResultIdRoute
+  '/session/$id': typeof SessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/exercises' | '/history' | '/measure' | '/sensors' | '/result/$id'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/exercises' | '/history' | '/measure' | '/sensors' | '/result/$id'
-  id:
-    | '__root__'
     | '/'
+    | '/connect'
     | '/exercises'
     | '/history'
     | '/measure'
+    | '/pelvis'
     | '/sensors'
     | '/result/$id'
+    | '/session/$id'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/connect'
+    | '/exercises'
+    | '/history'
+    | '/measure'
+    | '/pelvis'
+    | '/sensors'
+    | '/result/$id'
+    | '/session/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/connect'
+    | '/exercises'
+    | '/history'
+    | '/measure'
+    | '/pelvis'
+    | '/sensors'
+    | '/result/$id'
+    | '/session/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ConnectRoute: typeof ConnectRoute
   ExercisesRoute: typeof ExercisesRoute
   HistoryRoute: typeof HistoryRoute
   MeasureRoute: typeof MeasureRoute
+  PelvisRoute: typeof PelvisRoute
   SensorsRoute: typeof SensorsRoute
   ResultIdRoute: typeof ResultIdRoute
+  SessionIdRoute: typeof SessionIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -104,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect': {
+      id: '/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/exercises': {
@@ -127,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeasureRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pelvis': {
+      id: '/pelvis'
+      path: '/pelvis'
+      fullPath: '/pelvis'
+      preLoaderRoute: typeof PelvisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sensors': {
       id: '/sensors'
       path: '/sensors'
@@ -141,16 +205,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResultIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/session/$id': {
+      id: '/session/$id'
+      path: '/session/$id'
+      fullPath: '/session/$id'
+      preLoaderRoute: typeof SessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ConnectRoute: ConnectRoute,
   ExercisesRoute: ExercisesRoute,
   HistoryRoute: HistoryRoute,
   MeasureRoute: MeasureRoute,
+  PelvisRoute: PelvisRoute,
   SensorsRoute: SensorsRoute,
   ResultIdRoute: ResultIdRoute,
+  SessionIdRoute: SessionIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
