@@ -14,6 +14,7 @@ describe("isolated prototype sensor layouts", () => {
     expect(PROTOTYPE_LAYOUTS.A.paths).toHaveLength(0);
     for (const id of ["B", "C"] as const) {
       const [left, right] = PROTOTYPE_LAYOUTS[id].paths;
+      if (!left || !right) throw new Error(`Missing symmetric paths for ${id}`);
       expect(left.map(([x, y, z]) => [x === 0 ? 0 : -x, y, z])).toEqual(right);
     }
   });
