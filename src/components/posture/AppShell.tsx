@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Activity, Bluetooth, CalendarDays, Dumbbell, House } from "lucide-react";
+import { Activity, Bluetooth, CalendarDays, Camera, Dumbbell, House } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,7 @@ const NAV = [
   { to: "/pelvis", label: "측정", icon: Activity },
   { to: "/exercises", label: "운동", icon: Dumbbell },
   { to: "/history", label: "기록", icon: CalendarDays },
+  { to: "/measure", label: "보조 측정", icon: Camera },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {

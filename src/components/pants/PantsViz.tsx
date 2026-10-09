@@ -89,8 +89,8 @@ export function SensorDemoNotice({ className }: { className?: string }) {
     <div className={cn("rounded-2xl border border-primary/30 bg-primary-soft p-4 text-sm", className)} role="note">
       <p className="font-semibold text-primary">Demo Sensor Mode · 가상 센서 데이터</p>
       <p className="mt-1 leading-relaxed text-muted-foreground">
-        실제 스마트 팬츠 하드웨어가 아직 연결되지 않아, 실시간처럼 움직이는 가상 IMU 데이터로 동작합니다. 수치는
-        골반 비대칭 측정 흐름을 체험하기 위한 예시이며 의료 진단이 아닙니다.
+        실제 BLE 센서 연결은 아직 없습니다. 지금 표시되는 모든 센서 값과 지표는 가상 데모 데이터이며, 실측이 아니므로
+        의료 진단이나 참고 판단에 사용할 수 없습니다.
       </p>
     </div>
   );
