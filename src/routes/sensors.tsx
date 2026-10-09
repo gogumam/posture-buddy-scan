@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute } from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
 import { ArrowDown } from "lucide-react";
 
 import { PageHeader } from "@/components/posture/AppShell";
@@ -6,6 +7,8 @@ import { PantsFigure, SensorDemoNotice } from "@/components/pants/PantsViz";
 import { Badge } from "@/components/ui/badge";
 import { useSensorHub } from "@/hooks/use-sensor-hub";
 import { ALL_SENSORS, SENSOR_SPECS } from "@/lib/sensor/devices";
+
+const PrototypeViewer = lazy(() => import("@/components/pants/PrototypeViewer"));
 
 export const Route = createFileRoute("/sensors")({
   head: () => ({
@@ -40,6 +43,11 @@ function DesignPage() {
     <div>
       <PageHeader title="웨어러블 설계" subtitle="스마트 팬츠의 센서 배치와 데이터 흐름" />
       <div className="space-y-5 px-5 pb-6">
+        <ClientOnly fallback={<div className="h-[540px] text-sm text-muted-foreground">3D 배치 비교 준비 중…</div>}>
+          <Suspense fallback={<div className="h-[540px] text-sm text-muted-foreground" role="status">3D 배치 비교 준비 중…</div>}>
+            <PrototypeViewer />
+          </Suspense>
+        </ClientOnly>
         <section className="surface-card p-5">
           <PantsFigure status={status} className="mx-auto max-w-[220px]" />
           <ul className="mt-3 space-y-3">
