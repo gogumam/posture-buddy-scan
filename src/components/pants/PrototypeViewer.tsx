@@ -12,9 +12,9 @@ type Palette = { fabric: string; trim: string; sensor: string; wire: string; lig
 type ViewCommand = { action: "front" | "back" | "reset" | "in" | "out"; version: number };
 
 class ViewerBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
+  override state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
-  render() {
+  override render() {
     return this.state.failed ? <div className="flex h-full items-center justify-center p-6 text-center text-sm text-muted-foreground" role="alert">3D 화면을 표시할 수 없습니다. WebGL을 지원하는 브라우저에서 다시 열어주세요. 아래에서 배치 구성은 비교할 수 있습니다.</div> : this.props.children;
   }
 }
@@ -54,7 +54,7 @@ function PrototypeScene({ layout, palette }: { layout: LayoutId; palette: Palett
     </Environment>
     <PrototypeGarment fabric={palette.fabric} trim={palette.trim} />
     {config.paths.map((points, i) => <Line key={`${layout}-${i}`} points={points} color={palette.wire} lineWidth={3} />)}
-    {config.sensors.map((sensor) => <group key={sensor.id} position={sensor.position} rotation={sensor.rotation}>
+    {config.sensors.map((sensor) => <group key={sensor.id} position={sensor.position} rotation={sensor.rotation ?? [0, 0, 0]}>
       <mesh><boxGeometry args={SENSOR_SIZE} /><meshStandardMaterial color={palette.sensor} metalness={0.25} roughness={0.35} /></mesh>
       <mesh position-z={-0.0055}><boxGeometry args={[0.023, 0.003, 0.001]} /><meshStandardMaterial color={palette.trim} /></mesh>
     </group>)}
