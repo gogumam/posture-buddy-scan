@@ -48,7 +48,7 @@ function HomePage() {
 
   return (
     <div>
-      <PageHeader title="스마트 팬츠" subtitle="골반 움직임 비대칭 측정 시스템 · MVP" />
+      <PageHeader title="스마트 팬츠" subtitle="스마트 팬츠 기반 골반 움직임 스크리닝 · MVP" />
       <div className="space-y-5 px-5 pb-6">
         <section className="surface-card flex items-center gap-4 p-4">
           <PantsFigure status={status} className="w-28 shrink-0" />
@@ -61,9 +61,14 @@ function HomePage() {
           </div>
         </section>
 
-        <Button asChild size="lg" className="h-16 w-full text-lg">
-          <Link to="/pelvis"><Play className="size-6" /> 골반 측정 시작</Link>
-        </Button>
+        <div className="space-y-2">
+          <Button asChild size="lg" className="h-16 w-full text-lg">
+            <Link to="/sensors"><Cpu className="size-6" /> 센서 데모 보기</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="h-12 w-full">
+            <Link to="/pelvis"><Play className="size-5" /> 골반 측정 시작</Link>
+          </Button>
+        </div>
 
         {latest ? (
           <section className="surface-card p-5">
